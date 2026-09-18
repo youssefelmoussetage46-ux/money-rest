@@ -18,6 +18,11 @@ const SavingsGoals: React.FC = () => {
   } = useFinanceStore();
   const formatCurrency = useCurrency();
 
+  const totalCurrent = savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+  const totalTarget = savingsGoals.reduce((sum, goal) => sum + goal.targetAmount, 0);
+  const overallProgress = totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0;
+  const clampedProgress = Math.max(0, Math.min(100, overallProgress));
+
   const [formVisible, setFormVisible] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -33,7 +38,7 @@ const SavingsGoals: React.FC = () => {
     setFormData({
       name: '',
       targetAmount: '',
-      currentAmount: '0',
+      currentAmount: '',
       deadline: ''
     });
   };
@@ -51,10 +56,34 @@ const SavingsGoals: React.FC = () => {
       return;
     }
 
+    const targetAmount = parseFloat(formData.targetAmount);
+    const currentAmount = parseFloat(formData.currentAmount);
+
+    if (isNaN(targetAmount) || targetAmount <= 0) {
+      alert('Please enter a valid target amount greater than zero');
+      return;
+    }
+
+    if (isNaN(currentAmount) || currentAmount <= 0) {
+      alert('Please enter a valid current amount greater than zero');
+      return;
+    }
+
+    if (targetAmount < currentAmount) {
+      alert('Target amount must be greater than or equal to current amount');
+      return;
+    }
+
+    const deadlineDate = new Date(formData.deadline);
+    if (isNaN(deadlineDate.getTime())) {
+      alert('Please enter a valid date');
+      return;
+    }
+
     const goalData = {
       name: formData.name,
-      targetAmount: parseFloat(formData.targetAmount),
-      currentAmount: parseFloat(formData.currentAmount),
+      targetAmount: targetAmount,
+      currentAmount: currentAmount,
       deadline: formData.deadline
     };
 
@@ -178,9 +207,7 @@ const SavingsGoals: React.FC = () => {
           </div>
 
           <ProgressBar
-            value={savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0) > 0 ?
-              (savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0) /
-                savingsGoals.reduce((sum, goal) => sum + goal.targetAmount, 0)) * 100 : 0}
+            value={clampedProgress}
             label="Overall Savings Progress"
             showValue
             color="green"

@@ -48,10 +48,28 @@ const DebtTracker: React.FC = () => {
       return;
     }
 
+    const totalAmount = parseFloat(formData.totalAmount);
+    const paidAmount = parseFloat(formData.paidAmount);
+
+    if (isNaN(totalAmount) || totalAmount <= 0) {
+      alert('Please enter a valid total amount greater than zero');
+      return;
+    }
+
+    if (isNaN(paidAmount) || paidAmount < 0) {
+      alert('Please enter a valid paid amount greater than or equal to zero');
+      return;
+    }
+
+    if (paidAmount > totalAmount) {
+      alert('Paid amount cannot be greater than total amount');
+      return;
+    }
+
     const debtData = {
       name: formData.name,
-      totalAmount: parseFloat(formData.totalAmount),
-      paidAmount: parseFloat(formData.paidAmount)
+      totalAmount: totalAmount,
+      paidAmount: paidAmount
     };
 
     if (editingId) {

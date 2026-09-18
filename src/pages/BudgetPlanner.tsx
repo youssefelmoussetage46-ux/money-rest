@@ -47,9 +47,15 @@ const BudgetPlanner: React.FC = () => {
       return;
     }
 
+    const amount = parseFloat(formData.budgetedAmount);
+    if (isNaN(amount) || amount <= 0) {
+      alert('Please enter a valid amount greater than zero');
+      return;
+    }
+
     const categoryData = {
       name: formData.name,
-      budgetedAmount: parseFloat(formData.budgetedAmount),
+      budgetedAmount: amount,
       spentAmount: getExpensesByCategory(new Date().getFullYear(), new Date().getMonth())[formData.name.toLowerCase()] || 0
     };
 

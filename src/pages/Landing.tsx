@@ -3,9 +3,67 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
+import { useFinanceStore } from '../hooks/useFinanceStore';
+import type { Transaction, BudgetCategory, SavingsGoal, Debt } from '../types/finance';
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
+  const { setTransactions, setBudgetCategories, setSavingsGoals, setDebts } = useFinanceStore();
+
+  // Function to handle Explore Demo button click
+  const handleExploreDemo = () => {
+    // Demo transactions
+    const demoTransactions: Transaction[] = [
+      { id: '1', description: 'Salary', amount: 3500, type: 'income', category: 'Salary', date: '2026-09-01' },
+      { id: '2', description: 'Freelance Project', amount: 1200, type: 'income', category: 'Freelance', date: '2026-09-05' },
+      { id: '3', description: 'Grocery Shopping', amount: 150, type: 'expense', category: 'Food', date: '2026-09-02' },
+      { id: '4', description: 'Gasoline', amount: 60, type: 'expense', category: 'Transport', date: '2026-09-03' },
+      { id: '5', description: 'Internet Bill', amount: 75, type: 'expense', category: 'Bills', date: '2026-09-04' },
+      { id: '6', description: 'Netflix Subscription', amount: 15, type: 'expense', category: 'Entertainment', date: '2026-09-05' },
+      { id: '7', description: 'Restaurant Dinner', amount: 85, type: 'expense', category: 'Food', date: '2026-09-06' },
+      { id: '8', description: 'Movie Tickets', amount: 30, type: 'expense', category: 'Entertainment', date: '2026-09-07' },
+      { id: '9', description: 'Pharmacy', amount: 25, type: 'expense', category: 'Health', date: '2026-09-08' },
+      { id: '10', description: 'New Shirt', amount: 45, type: 'expense', category: 'Shopping', date: '2026-09-09' }
+    ];
+
+    // Demo budget categories (with some spent amounts)
+    const demoBudgetCategories: BudgetCategory[] = [
+      { id: 'food', name: 'Food', budgetedAmount: 500, spentAmount: 230 },
+      { id: 'transport', name: 'Transport', budgetedAmount: 300, spentAmount: 60 },
+      { id: 'bills', name: 'Bills', budgetedAmount: 800, spentAmount: 75 },
+      { id: 'shopping', name: 'Shopping', budgetedAmount: 200, spentAmount: 45 },
+      { id: 'entertainment', name: 'Entertainment', budgetedAmount: 150, spentAmount: 45 },
+      { id: 'health', name: 'Health', budgetedAmount: 100, spentAmount: 25 },
+      { id: 'other', name: 'Other', budgetedAmount: 100, spentAmount: 0 }
+    ];
+
+    // Demo savings goals
+    const demoSavingsGoals: SavingsGoal[] = [
+      { id: 'emergency-fund', name: 'Emergency Fund', targetAmount: 5000, currentAmount: 1500, deadline: '2026-12-31' },
+      { id: 'vacation', name: 'Vacation', targetAmount: 3000, currentAmount: 750, deadline: '2027-06-30' },
+      { id: 'home-downpayment', name: 'Home Downpayment', targetAmount: 20000, currentAmount: 5000, deadline: '2028-12-31' }
+    ];
+
+    // Demo debts
+    const demoDebts: Debt[] = [
+      { id: 'credit-card', name: 'Credit Card Debt', totalAmount: 2500, paidAmount: 500 },
+      { id: 'student-loan', name: 'Student Loan', totalAmount: 15000, paidAmount: 3000 },
+      { id: 'car-loan', name: 'Car Loan', totalAmount: 10000, paidAmount: 2000 }
+    ];
+
+    // Set the demo data in the store
+    setTransactions(demoTransactions);
+    setBudgetCategories(demoBudgetCategories);
+    setSavingsGoals(demoSavingsGoals);
+    setDebts(demoDebts);
+
+    // Set localStorage flags for demo mode and completed onboarding
+    localStorage.setItem('money-reset-onboarded', 'true');
+    localStorage.setItem('demo-mode', 'true');
+
+    // Navigate to dashboard
+    navigate('/dashboard');
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -26,7 +84,7 @@ const Landing: React.FC = () => {
             <Button
               variant="primary"
               onClick={() => {
-                navigate('/');
+                navigate('/signup');
               }}
               className="px-8 py-3 text-lg"
             >
@@ -34,9 +92,7 @@ const Landing: React.FC = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => {
-                navigate('/');
-              }}
+              onClick={handleExploreDemo}
               className="px-8 py-3 text-lg border-primary-600"
             >
               Explore Demo
@@ -216,7 +272,7 @@ const Landing: React.FC = () => {
             <Button
               variant="primary"
               onClick={() => {
-                navigate('/');
+                navigate('/signup');
               }}
               className="px-8 py-3 text-lg font-semibold"
             >
@@ -225,8 +281,15 @@ const Landing: React.FC = () => {
             <Button
               variant="outline"
               onClick={() => {
-                navigate('/');
+                navigate('/login');
               }}
+              className="px-8 py-3 text-lg font-semibold border-primary-600"
+            >
+              Sign In
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleExploreDemo}
               className="px-8 py-3 text-lg font-semibold border-primary-600"
             >
               Explore Demo

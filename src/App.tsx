@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import { useState, useEffect } from 'react';
 import { useFinanceStore } from './hooks/useFinanceStore';
@@ -14,17 +14,34 @@ import DebtTracker from './pages/DebtTracker';
 import MonthlyOverview from './pages/MonthlyOverview';
 import Settings from './pages/Settings';
 import Landing from './pages/Landing';
+import Login from './pages/Login';
+import SignUp from './pages/SignUp';
 import Icon from './components/Icon';
+import ProtectedRoute from './components/ProtectedRoute';
+import { useAuthStore } from './stores/authStore';
 
-function App() {
+function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     const onboarded = localStorage.getItem('money-reset-onboarded');
     return onboarded === null;
   });
+  const navigate = useNavigate();
 
   // Get store setters for demo data
   const { setTransactions, setBudgetCategories, setSavingsGoals, setDebts } = useFinanceStore();
+
+  // Initialize auth store
+  const authStore = useAuthStore();
+  const initializeAuth = useAuthStore((state) => state.initialize);
+  const location = useLocation();
+  const isPublicPath = ['/', '/login', '/signup'].includes(location.pathname);
+
+  // Initialize auth state on app load
+  useEffect(() => {
+    const cleanup = authStore.initialize();
+    return cleanup;
+  }, [initializeAuth]);
 
   // Set initial sidebar state based on window width
   useEffect(() => {
@@ -90,7 +107,10 @@ function App() {
 
     // Mark onboarding as complete
     localStorage.setItem('money-reset-onboarded', 'true');
+    // Set demo mode flag
+    localStorage.setItem('demo-mode', 'true');
     setShowOnboarding(false);
+    navigate('/dashboard');
   };
 
   const handleRestartOnboarding = () => {
@@ -100,9 +120,9 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="relative min-h-screen flex flex-col">
-        {/* Hamburger button - only visible on mobile */}
+    <div className="relative min-h-screen flex flex-col">
+      {/* Hamburger button - only visible on mobile */}
+      {!isPublicPath && (
         <button
           className="md:hidden fixed left-4 top-4 z-20 p-2 rounded-md bg-primary-50 text-primary-600 hover:bg-primary-100"
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -114,15 +134,17 @@ function App() {
             <Icon name="menu" className="h-5 w-5" />
           )}
         </button>
+      )}
 
-        {/* Sidebar */}
+      {/* Sidebar */}
+      {!isPublicPath && (
         <aside className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-100 ${isSidebarOpen ? 'transform translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
           <div className="flex-shrink-0 flex items-center px-6 py-4 border-b border-gray-100">
             <span className="text-xl font-bold text-primary-600">Money Reset</span>
           </div>
           <nav className="mt-6 space-y-1">
             <NavLink
-              to="/"
+              to="/dashboard"
               end
               className={({ isActive }) => `
                 flex items-center px-3 py-2 rounded-md text-sm font-medium
@@ -194,52 +216,112 @@ function App() {
             >
               Settings
             </NavLink>
+
+            {/* Logout button */}
+            <button
+              onClick={async () => {
+                await authStore.signOut();
+                // Redirect to login after logout
+                window.location.href = '/login';
+              }}
+              className="mt-8 flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50"
+            >
+              <Icon name="x" className="h-4 w-4 mr-2" />
+              Logout
+            </button>
           </nav>
         </aside>
+      )}
 
-        {/* Main Content */}
-        <main className={`flex-1 p-6 overflow-y-auto ${isSidebarOpen ? 'md:ml-64' : 'ml-0'} transition-transform duration-300 ease-in-out`}>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/landing" element={<Landing />} />
-            <Route path="/income" element={<IncomeTracker />} />
-            <Route path="/expenses" element={<ExpenseTracker />} />
-            <Route path="/budget" element={<BudgetPlanner />} />
-            <Route path="/savings" element={<SavingsGoals />} />
-            <Route path="/debt" element={<DebtTracker />} />
-            <Route path="/overview" element={<MonthlyOverview />} />
-            <Route path="/settings" element={<Settings onRestartOnboarding={handleRestartOnboarding} />} />
-            <Route path="*" element={<div className="text-center py-12"><h1 className="text-2xl font-bold text-gray-800">404 - Page Not Found</h1><p className="mt-4 text-gray-600">The page you're looking for doesn't exist.</p></div>} />
-          </Routes>
-        </main>
+      {/* Main Content */}
+      <main className={`flex-1 p-6 overflow-y-auto ${isSidebarOpen ? 'md:ml-64' : 'ml-0'} transition-transform duration-300 ease-in-out`}>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
 
-        {/* Onboarding Modal */}
-        {showOnboarding && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Money Reset</h2>
-              <p className="text-gray-600 mb-6">
-                Money Reset helps you understand your money, control spending, plan budgets, build savings, and track debt.
-                Get started by choosing an option below.
-              </p>
-              <div className="space-y-4">
-                <button
-                  onClick={handleStartFresh}
-                  className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200"
-                >
-                  Start Fresh
-                </button>
-                <button
-                  onClick={handleExploreDemo}
-                  className="w-full flex items-center justify-center px-4 py-2 border border-primary-600 text-primary-600 rounded-md hover:bg-primary-50 transition-colors duration-200"
-                >
-                  Explore Demo
-                </button>
-              </div>
+          {/* Protected routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/income" element={
+            <ProtectedRoute>
+              <IncomeTracker />
+            </ProtectedRoute>
+          } />
+          <Route path="/expenses" element={
+            <ProtectedRoute>
+              <ExpenseTracker />
+            </ProtectedRoute>
+          } />
+          <Route path="/budget" element={
+            <ProtectedRoute>
+              <BudgetPlanner />
+            </ProtectedRoute>
+          } />
+          <Route path="/savings" element={
+            <ProtectedRoute>
+              <SavingsGoals />
+            </ProtectedRoute>
+          } />
+          <Route path="/debt" element={
+            <ProtectedRoute>
+              <DebtTracker />
+            </ProtectedRoute>
+          } />
+          <Route path="/overview" element={
+            <ProtectedRoute>
+              <MonthlyOverview />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings onRestartOnboarding={handleRestartOnboarding} />
+            </ProtectedRoute>
+          } />
+
+          {/* 404 route */}
+          <Route path="*" element={<div className="text-center py-12"><h1 className="text-2xl font-bold text-gray-800">404 - Page Not Found</h1><p className="mt-4 text-gray-600">The page you're looking for doesn't exist.</p></div>} />
+        </Routes>
+      </main>
+
+      {/* Onboarding Modal */}
+      {showOnboarding && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Money Reset</h2>
+            <p className="text-gray-600 mb-6">
+              Money Reset helps you understand your money, control spending, plan budgets, build savings, and track debt.
+              Get started by choosing an option below.
+            </p>
+            <div className="space-y-4">
+              <button
+                onClick={handleStartFresh}
+                className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200"
+              >
+                Start Fresh
+              </button>
+              <button
+                onClick={handleExploreDemo}
+                className="w-full flex items-center justify-center px-4 py-2 border border-primary-600 text-primary-600 rounded-md hover:bg-primary-50 transition-colors duration-200"
+              >
+                Explore Demo
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
