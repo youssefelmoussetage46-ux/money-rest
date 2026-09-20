@@ -16,6 +16,8 @@ import Settings from './pages/Settings';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
+import DemoLayout from './pages/DemoLayout';
+import DashboardDemo from './pages/demo/DashboardDemo';
 import Icon from './components/Icon';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuthStore } from './stores/authStore';
@@ -79,7 +81,7 @@ function AppContent() {
       { id: 'food', name: 'Food', budgetedAmount: 500, spentAmount: 230 },
       { id: 'transport', name: 'Transport', budgetedAmount: 300, spentAmount: 60 },
       { id: 'bills', name: 'Bills', budgetedAmount: 800, spentAmount: 75 },
-      { id: 'shopping', name: 'Shopping', budgetedAmount: 200, spentAmount: 45 },
+      { id: 'shopping', name: 'Shipping', budgetedAmount: 200, spentAmount: 45 },
       { id: 'entertainment', name: 'Entertainment', budgetedAmount: 150, spentAmount: 45 },
       { id: 'health', name: 'Health', budgetedAmount: 100, spentAmount: 25 },
       { id: 'other', name: 'Other', budgetedAmount: 100, spentAmount: 0 }
@@ -119,7 +121,7 @@ function AppContent() {
 
   return (
     <div className="relative min-h-screen flex flex-col">
-      {/* Hamburger button - only visible on mobile */}
+                      {/* Hamburger button - only visible on mobile */}
       {!isPublicPath && (
         <button
           className="md:hidden fixed left-4 top-4 z-20 p-2 rounded-md bg-primary-50 text-primary-600 hover:bg-primary-100"
@@ -238,7 +240,9 @@ function AppContent() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-
+ <Route path="/demo" element={<DemoLayout />}>
+  <Route index element={<DashboardDemo />} />
+</Route>
           {/* Protected routes */}
           <Route path="/dashboard" element={
             <ProtectedRoute>
