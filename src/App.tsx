@@ -107,8 +107,6 @@ function AppContent() {
 
     // Mark onboarding as complete
     localStorage.setItem('money-reset-onboarded', 'true');
-    // Set demo mode flag
-    localStorage.setItem('demo-mode', 'true');
     setShowOnboarding(false);
     navigate('/dashboard');
   };

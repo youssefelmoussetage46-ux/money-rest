@@ -21,12 +21,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, fallback }) =
     );
   }
 
-  // If demo mode is active, allow access to protected routes
-  const demoMode = localStorage.getItem('demo-mode') === 'true';
-  if (demoMode) {
-    return children;
-  }
-
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

@@ -95,8 +95,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       user: data.user ?? null,
     });
-    // Clear demo mode flag on real login
-    localStorage.removeItem('demo-mode');
 
     return { error: null };
   },
@@ -104,8 +102,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     await supabase.auth.signOut();
     set({ user: null });
-    // Clear demo mode flag on logout
-    localStorage.removeItem('demo-mode');
   },
 
   resetPassword: async (email: string) => {

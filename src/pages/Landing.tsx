@@ -57,12 +57,11 @@ const Landing: React.FC = () => {
     setSavingsGoals(demoSavingsGoals);
     setDebts(demoDebts);
 
-    // Set localStorage flags for demo mode and completed onboarding
+    // Set localStorage flag for completed onboarding
     localStorage.setItem('money-reset-onboarded', 'true');
-    localStorage.setItem('demo-mode', 'true');
 
-    // Navigate to dashboard
-    navigate('/dashboard');
+    // Navigate to demo page
+    navigate('/demo');
   };
 
   return (
